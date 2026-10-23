@@ -35,10 +35,10 @@ const DEFAULTS = {
   {id:"l3",name:"Vercel",url:"https://vercel.com/dashboard",desc:"Деплой и проекты",icon:"▲"}
  ]
 };
-const KEY="my-hub-material3-v1";
-let data=loadData(), editing=null;
-function loadData(){try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);if(Array.isArray(d.servers)&&Array.isArray(d.links))return d}}catch(e){}return structuredClone(DEFAULTS)}
-function saveData(){localStorage.setItem(KEY,JSON.stringify(data));render();renderAdmin();toast("Изменения сохранены в этом браузере")}
+const API_BASE="https://stunning-fishstick-api.kurockinsava.workers.dev";
+let data=structuredClone(DEFAULTS), editing=null;
+async function loadData(){try{const r=await fetch(API_BASE+"/api/data");if(!r.ok)throw new Error("API unavailable");const d=await r.json();if(Array.isArray(d.servers)&&Array.isArray(d.links))data=d}catch(e){console.warn("Hub API is not deployed or reachable yet",e)}render();renderAdmin()}
+function saveData(){toast("Изменения меняются через отдельную админку")}
 function safeUrl(raw){const s=String(raw||"").trim();if(!s)return null;if(/^https?:\/\//i.test(s)){try{const u=new URL(s);return ["http:","https:"].includes(u.protocol)?u.href:null}catch{return null}}if(/^[a-z0-9.-]+(?::\d{1,5})?(?:\/[^\s]*)?$/i.test(s))return "https://"+s;return null}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function card(item,type){const href=safeUrl(item.url);const isServer=type==="servers";const title=esc(item.name);const desc=esc(item.desc||"");const icon=esc(item.icon|| (isServer?"🎮":"↗"));return '<a class="tile" href="'+(href?esc(href):"#")+'" '+(href?'target="_blank" rel="noopener noreferrer"':'aria-disabled="true" onclick="return false"')+'><div class="tiletop"><div class="tileicon">'+icon+'</div><div><h3>'+title+'</h3><p>'+desc+'</p></div></div><div class="tilebottom"><span class="pill">'+esc(item.url)+'</span><span class="arrow">↗</span></div></a>'}
@@ -58,7 +58,7 @@ document.getElementById("adminList").addEventListener("click",e=>{const edit=e.t
 document.getElementById("editForm").addEventListener("submit",e=>{e.preventDefault();const type=document.getElementById("itemType").value;const url=document.getElementById("itemUrl").value.trim();if(!safeUrl(url)){toast("Введи корректную ссылку или адрес сервера");return}const item={id:editing?.id||("item-"+Date.now()+"-"+Math.random().toString(36).slice(2,7)),name:document.getElementById("itemName").value.trim(),url,desc:document.getElementById("itemDesc").value.trim(),icon:document.getElementById("itemIcon").value.trim()||"↗"};if(!item.name){toast("Добавь название");return}if(editing?.id){const i=data[type].findIndex(x=>x.id===editing.id);if(i>=0)data[type][i]=item;else data[type].push(item)}else data[type].push(item);hide("editModal");show("adminModal");saveData()});
 document.getElementById("exportData").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="my-hub-data.json";a.click();URL.revokeObjectURL(a.href);toast("Экспорт готов")});
 document.getElementById("importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.servers)||!Array.isArray(d.links))throw new Error();for(const type of ["servers","links"])if(!d[type].every(x=>x&&typeof x.name==="string"&&typeof x.url==="string"))throw new Error();data=d;saveData();toast("Данные импортированы")}catch{toast("Не удалось прочитать JSON хаба")}e.target.value=""});
-document.getElementById("year").textContent=new Date().getFullYear();render();
+document.getElementById("year").textContent=new Date().getFullYear();loadData();
 </script>
 </body>
 </html>
