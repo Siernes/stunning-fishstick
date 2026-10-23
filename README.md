@@ -1,15 +1,16 @@
 # My Hub — Material 3 inspired
 
-A responsive static hub for server addresses and useful links.
+Responsive static hub for server addresses and useful links.
 
 ## Features
-- Material 3-inspired responsive interface and system light/dark theme.
+- Material 3-inspired responsive interface with light/dark system theme.
 - Search, server cards, link cards.
-- Admin modal (password: `6767`) to add, edit and remove entries.
-- Import/export JSON backup.
+- Separate admin page: `admin.html`.
+- Add, edit, and remove entries; import/export JSON backup.
+- Admin password is checked by comparing a SHA-256 hash.
 
 ## Important limitations
-This is a static, client-side website. Admin changes are saved only in the current browser's `localStorage`; they do not update the website for other visitors. The password is embedded in the frontend and is **not secure authentication**. Do not use this for sensitive or private content. For shared edits and real authentication, connect a backend/database and server-side auth.
+This is a static, client-side website. Admin changes are saved only in the current browser's `localStorage`; they do not update the site for other visitors. The SHA-256 hash is present in frontend code, so this is **not secure authentication**. Use server-side authentication and a backend/database for a public admin panel.
 
 ## Deploy
-Serve `index.html` from any static host, including GitHub Pages, Cloudflare Pages, or Vercel.
+Serve `index.html` and `admin.html` from the same static host, including GitHub Pages, Cloudflare Pages, or Vercel.
